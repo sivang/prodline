@@ -9,3 +9,5 @@ I've used the urwid library for text UI. This does many thing automatically but
 expects a barcode reader to be attached for some of its input.
 
 Mainly here for backup and reference purposes, if you found it useful, let me know.
+
+The interesting file to read here is 'factory_line.py'
