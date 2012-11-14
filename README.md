@@ -9,6 +9,9 @@ as digitally signing the unit so on subsequent reboots it will boot as a ready d
 as *highly* suitable for low level system and hardware development, while maintaining its high level
 readability making it easy to maintain and endow.
 
+The main file to start from here to is *factory_line.py* , the main executable that should be executed
+after the thin linux os has booted to carry on the initiation process to ready a unit for shipment.
+
 If you find this useful for your needs, please let me know. Feel free to contact me if you
 might want to use this and need modification or tweaks for you environment.
 
