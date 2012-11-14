@@ -34,12 +34,10 @@ files that are executed part of the software. Exception to these are:
    will find this file and execute the image upgrade tool to carry on the upgrade.
    
 3. /usr/lib/xpclient/AutoUpgrade is upgrade tool binary the production software will try to execute. Make sure
-   this binary is in fact available at that location and that it is executable. Consult Mark Lifshitz for newer
-   version of this or any errors with it.
+   this binary is in fact available at that location and that it is executable.
 
 4. /usr/lib/xpclient/eventsd is crucial for the upgrade process and must be available from this location.
-   The production software runs this program in the background. Consult Mark Lifshitz for any questions or
-   issues regarding thie file.
+   The production software runs this program in the background.
 
 Ths production software is written in Python, and uses the Urwid user interface library for its UI and interactions.
 So, to run the software a python interpreter must be installed onto the image as well as the library:
