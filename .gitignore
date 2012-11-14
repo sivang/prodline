@@ -1,0 +1,4 @@
+*.pyc
+*.csr
+*.key
+*.crt
