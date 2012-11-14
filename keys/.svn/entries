@@ -1,0 +1,52 @@
+8
+
+dir
+1611
+svn://compi/sivan/prodsoft/keys
+svn://compi
+
+
+
+2008-07-16T19:58:23.872858Z
+1554
+sivan
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+302b8f4d-47b5-8c4a-8520-9f1f1bee5f35
+
+private.key
+file
+
+
+
+
+2008-07-24T12:07:39.000000Z
+b5950b6791869c4785883ead6e8270ed
+2008-07-16T19:58:23.872858Z
+1554
+sivan
+
+public.key
+file
+
+
+
+
+2008-07-24T12:07:39.000000Z
+3897ea2cb729970fb82fb3bb86c66265
+2008-07-16T19:58:23.872858Z
+1554
+sivan
+
