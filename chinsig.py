@@ -6,6 +6,7 @@ import os
 from struct import *
 import array
 import fsMisc
+from pksign import *
 
 CERT_DIR = "/doc/cert" 
 CERT_DLL_PATH = "/dummy"
@@ -15,6 +16,8 @@ CERT_LOCATE_ERROR = -6
 CERT_LENGTH = 80
 CERT_SUCCESS   = 1
 SIGNFILES = ["signed1.bin","signed2.bin","signed3.bin","signed4.bin"]
+SECRET_KEY_FILE = 'private.key'
+MAINFILENAME = SIGNFILES[0]
 
 
 
@@ -74,6 +77,7 @@ def WriteCert(tofilename, cert): # expects cert to already be a string of hexade
 	f.write(cert_byte)
 	f.close()
 	return CERT_SUCCESS
+
 
 def AddFileHeader(szFileName):
 	hFile = None
@@ -168,6 +172,21 @@ def AppendFiles(FileNames):
 	mainfile.close()
 	return True
 
+def AppendFile(FileName): # Append a one file to the big file that is going to be written to the partition
+	mainfilename = MAINFILENAME
+	# print "mainfilename = ", mainfilename
+	try:
+		mainfile = file(mainfilename, 'r+b')
+		mainfile.seek(0,os.SEEK_END)
+	except:
+		return False
+	try:
+		fl = file(FileName, 'rb')
+	except:
+		return False
+	shutil.copyfileobj(fl, mainfile)
+	fl.close()
+	return True
 
 def WriteFileToPartition(filename, partition):
 	# we need to copy filename to /dev/tffsd
@@ -190,6 +209,7 @@ class SignatureCopier:
 		self.signatures = signatures
 		self.success = None
 		self.error = None
+		self.the_first_sig = self.signatures[0]
 	def copy(self):
 		res = SignFiles(self.filenames, self.signatures)
 		if not res:
@@ -201,7 +221,16 @@ class SignatureCopier:
 			self.success = False
 			self.error = 'Error while appending files! exitting.'
 			return False
-		res = WriteFileToPartition(self.filenames[0],'/dev/tffsd')
+		res = CreateSignedFile(self.the_first_sig, 'private.key')
+		if not res:
+			self.success = False
+			self.error = 'Failed creating private key signed string file.'
+			return False
+		res = AppendFile(TEMPFILE_SIGNED_FINAL)
+		if not res:
+			self.success = False
+			self.error = 'Error appending openssl signature file to the main bin file (%s)' % self.filenames[0]
+		res = WriteFileToPartition(self.filenames[0], '/dev/tffsd')
 		if not res:
 			self.success = False
 			self.error = 'Failed writing file to partition! exitting.'
