@@ -2,4 +2,5 @@
 *.csr
 *.key
 *.crt
-.svn
+.svn/
+keys/
