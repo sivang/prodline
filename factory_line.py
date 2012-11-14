@@ -7,6 +7,7 @@ import urllib
 import chinsig
 from ipget import *
 from upgrade import DoUpgrade
+import hwconf
 
 postURL = None 	# url against which we post the hwconfig and expect to receive signatures
 		# currently the value is being read from a file named posturl.cfg at the same dir where this runs
@@ -177,7 +178,8 @@ def prepareHardwareConfigString(cma,mac,unique_id):
 	Supply3V = 0
 	Corevdd = 0
 	UniqueID = unique_id
-	format_str = "%s,%s,%s,%s,%s,%d,%d,%d,%d,%d,%d,%s,%d,%s,%d,%d,%d,%d,%d,%d,%d,%2.3f A,%2.3f V,%2.3f V,%2.3f V,%s,%s"
+	ConfigHexaString = hwconf.reverseBitString(hwconf.returnHwConfigHexa())
+	format_str = "%s,%s,%s,%s,%s,%d,%d,%d,%d,%d,%d,%s,%d,%s,%d,%d,%d,%d,%d,%d,%d,%2.3f A,%2.3f V,%2.3f V,%2.3f V,%s,%s,%s"
 	result_str = format_str % (MAC,
 					CMA,
 					StationMAC,
@@ -204,7 +206,8 @@ def prepareHardwareConfigString(cma,mac,unique_id):
 					Supply3V,
 					Corevdd,
 					UniqueID,
-					LocalIP)
+					LocalIP,
+					ConfigHexaString)
 	return result_str
 
 
@@ -218,7 +221,7 @@ class Conversation(object):
 	def __init__(self):
 		self.items = urwid.SimpleListWalker(self.work_flowCMA())            #        comment when inputting not inputting CMA and replace with a workflow_MAC   line
 		self.listbox = urwid.ListBox(self.items)
-		instruct = urwid.Text("Linux Production Software v1.0b", 'center')
+		instruct = urwid.Text("Linux Production Software v0.1", 'center')
 		statusline = urwid.Text("READY", 'center')
 		self.status = statusline
 		header = urwid.AttrWrap( instruct, 'header' )
@@ -236,6 +239,13 @@ class Conversation(object):
 			('field_name','white','black','standout')
 			])
 		self.ui.run_wrapper( self.run )
+
+	def reset_ui(self):
+		self.editCMA.set_edit_text('')
+		self.editMAC.set_edit_text('')
+		self.items.pop()
+		self.items.pop()
+		self.items.set_focus(1)
 	
 	def run(self):
 		finished = False
@@ -260,6 +270,11 @@ class Conversation(object):
 				if k == "window resize":
 					size = self.ui.get_cols_rows()
 					continue
+				if k == "ctrl r": # reset the UI workflow to start from the beginning
+					if len(self.items) >= 4:
+						need_to_validate_CMA = True
+						self.reset_ui()
+					continue
 				if need_to_validate_CMA:
 					if k.isdigit() or k == 'backspace':
 						self.top.keypress( size, k)
@@ -268,7 +283,7 @@ class Conversation(object):
 						self.items.extend(self.work_flowMAC())
 						self.items.set_focus(3)
 						need_to_validate_CMA = False
-				elif isHexD(k) or k=='backspace': # we need to validate a MAC address
+				elif (isHexD(k) or k=='backspace') and len(self.editMAC.get_edit_text())<12: # we need to validate a MAC address
 					self.top.keypress( size, k ) 
 					if validateMac(self.editMAC.get_edit_text()):
 						mac_addr = self.editMAC.get_edit_text()
@@ -294,6 +309,8 @@ class Conversation(object):
 									if not httpsig.success:
 										self.foot.set_attr('error')
 										self.foot.set_text('Error ' + httpsig.error)
+										need_to_validate_CMA = True
+										self.reset_ui()
 										continue
 									else:
 										sigcp = chinsig.SignatureCopier(chinsig.SIGNFILES,httpsig.sigs)
@@ -319,6 +336,11 @@ class Conversation(object):
 							self.foot.set_attr('error')
 							self.status.set_text("Illeagle MAC address entered.")
 							continue
+				else:
+					if k == 'backspace': self.top.keypress(size, k)
+					
+					
+
 					
 					
 	
@@ -345,6 +367,10 @@ class Conversation(object):
 
 if __name__=="__main__":
 	url_from_file = FileData('posturl.cfg')
+	if not url_from_file:
+		print "Could not find 'posturl.cfg' file needed for operation."
+		print "It should contain one line of a URL that the production software should post data to."
+		sys.exit(-1)
 	postURL = url_from_file[0]
 	gui = Conversation()
 	gui.main()
